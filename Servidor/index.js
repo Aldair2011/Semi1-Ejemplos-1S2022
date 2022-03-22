@@ -30,6 +30,7 @@ console.log("Escuchando en el puerto", port)
 
 
 
+
 // se manda a llamar las credenciales de Mysql 
 const db_credentials = require('./db_creds');
 var conn = mysql.createPool(db_credentials);
@@ -41,6 +42,8 @@ var AWS = require('aws-sdk');
 const s3 = new AWS.S3(aws_keys.s3);
 const ddb = new AWS.DynamoDB(aws_keys.dynamodb);
 const rek = new AWS.Rekognition(aws_keys.rekognition);
+const translate = new AWS.Translate(aws_keys.translate);
+
 
 
 //*********************************************ALMACENAMIENTO****************************************************
@@ -285,3 +288,26 @@ app.post('/detectarcara', function (req, res) {
     });
   });
   
+  //----------------------------------------Inteligencia Artificial Amazon Translate---------------------------------------------------------
+
+app.post('/translate', (req, res) => {
+  let body = req.body
+
+  let text = body.text
+
+  let params = {
+    SourceLanguageCode: 'auto',
+    TargetLanguageCode: 'es',
+    Text: text || 'Hello there'
+  };
+  translate.translateText(params, function (err, data) {
+    if (err) {
+      console.log(err, err.stack);
+      res.send({ error: err })
+    } else {
+      console.log(data);
+      res.send({ message: data })
+    }
+  });
+});
+
